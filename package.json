@@ -1,0 +1,16 @@
+{
+	"name": "shortlink-cf-workers",
+	"version": "0.1.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Blooym/shortlink-cf-workers.git"
+	},
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev"
+	},
+	"devDependencies": {
+		"wrangler": "^3.7.0"
+	}
+}

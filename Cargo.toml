@@ -1,0 +1,22 @@
+[package]
+name = "shortlink-cf-workers"
+authors = ["Blooym"]
+description = "A simple link redirect service"
+repository = "https://github.com/Blooym/shortlink-cf-workers"
+licence = "BSD-3-Clause"
+license-file = "LICENCE"
+publish = false
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde = { version = "1.0.188", features = ["derive"] }
+worker = "0.0.18"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1

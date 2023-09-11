@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" container="width=device-width, initial-scale=1.0">
+    <title>Manage Links - Shortlink"
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-container">
+            <h1 class="title"><a href="https://github.com/Blooym/shortlink-cf-workers">Shortlink</a></h1>
+            <h2 class="subtitle">An open-source, serverless URL shortener for Cloudflare Workers.</h2>
+        </div>
+
+        <div class="api-routes-container">
+            <h2>Routes</h2>
+
+            <div class="api-routes-row">
+                <ul class="route">
+                    <h3 class="title get">GET /:id</h3>
+                    <p class="description">Redirects to the URL associated with the ID.</p>
+                </ul>
+                <ul class="route">
+                    <h3 class="title post">POST /:id</h3>
+                    <p class="description">Creates a new link - requires a JSON body with a "url" property.</p>
+                </ul>
+                <ul class="route">
+                    <h3 class="title delete">DELETE /:id</h3>
+                    <p class="description">Deletes a link.</p>
+                </ul>
+                <ul class="route">
+                    <h3 class="title put">PUT /:id</h3>
+                    <p class="description">Updates a link - requires a JSON body with a "url" property.</p>
+                </ul>
+                <ul class="route">
+                    <h3 class="title head">HEAD /:id</h3>
+                    <p class="description">Returns the URL associated with the ID if it exists.</p>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+
+<style>
+    /* Top level */
+
+    :root {
+        /* Page */
+        --text: #ffffff;
+        --background: #121212;
+
+        /* Box */
+        --box-background: #1e1e1e;
+        --box-text: #ffffff;
+
+        /* Accent */
+        --accent: #8935ff;
+        --accent-secondary: #5f00ff;
+    }
+
+    html {
+        background: var(--background);
+        color: var(--text);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 1em;
+    }
+
+
+    /* Header */
+
+    .header-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .header-container .title {
+        font-size: 3em;
+        margin-top: 0.5em;
+        margin-bottom: 0.5em;
+    }
+
+    .title a {
+        text-decoration: none;
+        color: var(--accent);
+    }
+
+    .title a:hover {
+        color: var(--accent-secondary);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    /* Routes */
+
+    .api-routes-container {
+        width: 80%;
+    }
+
+    .api-routes-container h2 {
+        font-size: xx-large;
+    }
+
+    .api-routes-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.2em;
+    }
+
+    .route {
+        display: flex;
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        flex-direction: column;
+        width: 20em;
+        padding: 1em;
+        background: var(--box-background);
+        border-radius: 0.5em;
+    }
+
+    .route .get {
+        color: #b5ffb5;
+    }
+
+    .route .post {
+        color: #ffd2a6;
+    }
+
+    .route .delete {
+        color: #f5a0a0;
+    }
+
+    .route .put {
+        color: #b1b1ff;
+    }
+
+    .route .head {
+        color: #fc99fc;
+    }
+</style>
+
+</html>
