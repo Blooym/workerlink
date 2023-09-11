@@ -7,7 +7,7 @@ A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV
 In order to use this, you will need to create a 'wrangler.toml' file with the following contents:
 
 ```toml
-name = "shortlink-cf-workers"
+name = "shortlink"
 main = "build/worker/shim.mjs"
 compatibility_date = "2023-08-10"
 kv_namespaces = [
