@@ -33,7 +33,7 @@ To check if a shortlink exists, send a HEAD request to `/:id`. This will return 
 
 ### Creating a shortlink
 
-To create a shortlink, send a POST request `/:id` with the following JSON body:
+To create a shortlink, send a POST request `/:id` with the following JSON body and a valid `Authorization` header.
 
 ```json
 {
@@ -43,7 +43,7 @@ To create a shortlink, send a POST request `/:id` with the following JSON body:
 
 ### Updating a shortlink
 
-To update a shortlink, send a PUT request to `/:id` with the following JSON body:
+To update a shortlink, send a PUT request to `/:id` with the following JSON body and a valid `Authorization` header:
 
 ```json
 {
@@ -53,5 +53,5 @@ To update a shortlink, send a PUT request to `/:id` with the following JSON body
 
 ### Deleting a shortlink
 
-To delete a shortlink, send a DELETE request to `/:id`.
+To delete a shortlink, send a DELETE request to `/:id` with a valid `Authorization` header.
 
