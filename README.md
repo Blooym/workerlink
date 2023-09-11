@@ -41,7 +41,7 @@ To create a shortlink, send a POST request `/:id` with the following JSON body:
 }
 ```
 
-### Updating
+### Updating a shortlink
 
 To update a shortlink, send a PUT request to `/:id` with the following JSON body:
 
