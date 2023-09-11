@@ -1,6 +1,6 @@
 # shortlink-cf-workers
 
-A simple Cloudflare Worker to create shortlinks to other services using Cloudflare KV.
+A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV
 
 ## Setup
 
