@@ -4,29 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" container="width=device-width, initial-scale=1.0">
-    <title>Manage Links - Shortlink</title>
+    <title>Shortlink</title>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header-container">
-            <h1 class="title"><a href="https://github.com/Blooym/shortlink-cf-workers">Shortlink</a></h1>
-            <h2 class="subtitle">An open-source, serverless URL shortener for Cloudflare Workers.</h2>
-        </div>
-    </div>
+    <h1 class="title"><a href="https://github.com/Blooym/shortlink-cf-workers">Shortlink</a></h1>
+    <h2 class="subtitle">An open-source, serverless URL shortener for Cloudflare Workers.</h2>
 </body>
 
 <style>
     :root {
-        /* Page */
         --text: #ffffff;
         --background: #121212;
-
-        /* Box */
-        --box-background: #1e1e1e;
-        --box-text: #ffffff;
-
-        /* Accent */
         --accent: #8935ff;
         --accent-secondary: #5f00ff;
     }
@@ -35,27 +24,13 @@
         background: var(--background);
         color: var(--text);
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    .container {
+        overflow: hidden;
         display: flex;
-        flex-direction: column;
+        justify-content: center;
         align-items: center;
         text-align: center;
-        padding: 1em;
-    }
-
-    .header-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .header-container .title {
-        font-size: 3em;
-        margin-top: 0.5em;
-        margin-bottom: 0.5em;
+        height: 100%;
+        width: 100%;
     }
 
     .title a {
