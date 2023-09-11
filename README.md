@@ -21,6 +21,8 @@ AUTH_TOKEN = # Set this to the token you want to use for authentication.
 command = "cargo install -q worker-build && worker-build --release"
 ```
 
+After that, you can run `npm install` to install the dependencies, and `npm run deploy` to deploy the worker to Cloudflare.
+
 ## Usage
 
 ### Getting a shortlink
