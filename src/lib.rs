@@ -23,20 +23,22 @@ struct UpdateLinkPayload {
 
 #[event(fetch)]
 async fn fetch(req: Request, env: Env, _ctx: Context) -> Result<Response> {
-    let router = Router::new()
+    Router::new()
         .get("/", |_, _| Response::from_html(INDEX_HTML))
         .get_async("/:id", get_link)
         .head_async("/:id", link_exists)
         .post_async("/:id", create_link)
         .put_async("/:id", update_link)
-        .delete_async("/:id", delete_link);
-    router.run(req, env).await
+        .delete_async("/:id", delete_link)
+        .run(req, env)
+        .await
 }
 
+/// Get the URL ID from a request.
 fn get_id_from_request(req: &Request) -> Result<String> {
     let path = req.path();
     let Some(id) = path.split("/").nth(1) else {
-        return Err("ID was not provided".into());
+        return Err("Unable to fetch a URL ID from the request")?;
     };
 
     Ok(id.to_string())

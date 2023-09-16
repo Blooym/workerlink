@@ -1,6 +1,6 @@
 # shortlink-cf-workers
 
-A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV
+A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV.
 
 ## Setup
 
@@ -23,37 +23,19 @@ command = "cargo install -q worker-build && worker-build --release"
 
 After that, you can run `npm install` to install the dependencies, and `npm run deploy` to deploy the worker to Cloudflare.
 
-## Usage
+## Routes 
 
-### Getting a shortlink
+- `GET /:id` - Redirects to the URL associated with the shortlink.
+- `HEAD /:id` - Checks if the shortlink exists.
+- `🔒 POST /:id` - Creates a shortlink.
+- `🔒 PUT /:id` - Updates a shortlink.
+- `🔒 DELETE /:id` - Deletes a shortlink.
 
-To redirect with a shortlink, send a GET request to `/:id`. This is what you would use in a browser.
+### Authentication
 
-### Checking if a shortlink exists
+The 🔒 icon denotes a request that requires a valid `Authentication` header to be provided alongside the request. This will be the same as the `AUTH_TOKEN` you've set as an environment variable.
 
-To check if a shortlink exists, send a HEAD request to `/:id`. This will return a 200 status code if the shortlink exists, and a 404 status code if it does not.
 
-### Creating a shortlink
+## License
 
-To create a shortlink, send a POST request `/:id` with the following JSON body and a valid `Authorization` header.
-
-```json
-{
-    "url": "https://example.com" # Replace this with the URL you want to redirect to.
-}
-```
-
-### Updating a shortlink
-
-To update a shortlink, send a PUT request to `/:id` with the following JSON body and a valid `Authorization` header:
-
-```json
-{
-    "url": "https://example.com" # Replace this with the URL you want to redirect to.
-}
-```
-
-### Deleting a shortlink
-
-To delete a shortlink, send a DELETE request to `/:id` with a valid `Authorization` header.
-
+This project is licensed under the BSD 3-Clause Licence. See [LICENCE](LICENCE) for more information.
