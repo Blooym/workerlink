@@ -3,7 +3,6 @@
 	"updateRemoteUserUID": true,
 	"remoteUser": "dev",
 	"containerUser": "dev",
-	"privileged": true,
 	"customizations": {
 		"vscode": {
 			"extensions": [
