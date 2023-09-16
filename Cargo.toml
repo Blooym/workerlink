@@ -3,7 +3,6 @@ name = "shortlink-cf-workers"
 authors = ["Blooym"]
 description = "A simple link redirect service"
 repository = "https://github.com/Blooym/shortlink-cf-workers"
-licence = "BSD-3-Clause"
 license-file = "LICENCE"
 publish = false
 version = "0.1.0"
