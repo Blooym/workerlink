@@ -1,4 +1,4 @@
-# shortlink-cf-workers
+# shortlink-cf
 
 A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV.
 
