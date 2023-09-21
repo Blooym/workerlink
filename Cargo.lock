@@ -495,7 +495,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "shortlink-cf-workers"
+name = "shortlink-cf"
 version = "0.1.0"
 dependencies = [
  "serde",

@@ -36,6 +36,6 @@ After that, you can run `npm install` to install the dependencies, and `npm run 
 The 🔒 icon denotes a request that requires a valid `Authentication` header to be provided alongside the request. This will be the same as the `AUTH_TOKEN` you've set as an environment variable.
 
 
-## License
+## Licence
 
-This project is licensed under the BSD 3-Clause Licence. See [LICENCE](LICENCE) for more information.
+This project is licenced under both the MIT Licence and the Apache Licence (Version 2.0). See [LICENCE-MIT](LICENCE-MIT) and [LICENCE-APACHE](LICENCE-APACHE) for more details.
