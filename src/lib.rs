@@ -109,7 +109,7 @@ async fn create_or_update_link(mut req: Request, ctx: RouteContext<()>) -> Resul
     if !body.overwrite {
         return Response::error(
             "A link with the given ID already exists and overwriting was not enabled.",
-            400,
+            409,
         );
     }
 
