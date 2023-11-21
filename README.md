@@ -4,7 +4,7 @@ A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV.
 
 ## Setup
 
-In order to use this, you will need to create a 'wrangler.toml' file with the following contents:
+In order to setup Shortlink on Cloudflare, create a 'wrangler.toml' file with the following contents:
 
 ```toml
 name = "shortlink"
@@ -21,20 +21,31 @@ AUTH_TOKEN = # Set this to the token you want to use for authentication.
 command = "cargo install -q worker-build && worker-build --release"
 ```
 
-After that, you can run `npm install` to install the dependencies, and `npm run deploy` to deploy the worker to Cloudflare.
+After that, run `npm install` to install the dependencies, and `npm run deploy` to deploy the worker to Cloudflare.
 
-## Routes 
+## Uses
 
-- `GET /:id` - Redirects to the URL associated with the shortlink.
-- `HEAD /:id` - Checks if the shortlink exists.
-- `🔒 POST /:id` - Creates a shortlink.
-- `🔒 PUT /:id` - Updates a shortlink.
-- `🔒 DELETE /:id` - Deletes a shortlink.
+Using the provided API you could easily setup Shortlink with any bash script to keybind creating a new short URL, or even integrate it with the "Shortcuts" app on Apple devices to shorten links from the comfort of a URL share sheet.
 
-### Authentication
+## API Route Documentation
 
-The 🔒 icon denotes a request that requires a valid `Authentication` header to be provided alongside the request. This will be the same as the `AUTH_TOKEN` you've set as an environment variable.
+🔒 represents a route that requires a valid `Authorization` header to be provided, this will be the same as the `AUTH_TOKEN` you've set as an environment variable.
 
+- **`GET /:id`: Redirect to the URL associated with the ID if it exists.**
+
+- **`HEAD /:id`: Check if a shortlink with the ID exists.**
+
+-  **`🔒 POST /:id`: Create or update a shortlink.**
+
+    * Example body:
+        ```json5
+        {
+            "url": "https://example.com", // The URL to redirect to upon visiting the link.
+            "overwrite": false|true // Whether or not to overwrite any existing shortlink with the same ID.
+        }
+        ```
+
+- **`🔒 DELETE /:id` - Deletes a shortlink.**
 
 ## Licence
 

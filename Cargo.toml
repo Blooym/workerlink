@@ -12,10 +12,14 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-serde = { version = "1.0.188", features = ["derive"] }
+async-trait = "0.1.74"
+serde = { version = "1.0.192", features = ["derive"] }
 worker = "0.0.18"
 
 [profile.release]
 lto = true
 strip = true
 codegen-units = 1
+
+[lints.rust]
+unsafe_code = "forbid"
