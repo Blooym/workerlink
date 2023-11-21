@@ -12,15 +12,15 @@ use worker::{event, Context, Env, Request, Response, Result, RouteContext, Route
 /// The HTML for the index page.
 const INDEX_HTML_CONTENT: &str = include_str!("../static/index.html");
 
-/// The payload for creating a link.
+/// The request for creating/updating a link.
 #[derive(Deserialize)]
-struct CreateLinkPayload {
+struct CreateLinkRequest {
     url: String,
     #[serde(default)]
     overwrite: bool,
 }
 
-/// The response returned when successfully creating a link.
+/// The response for successfully creating a link.
 #[derive(Serialize)]
 struct CreateLinkResponse {
     url: String,
@@ -93,7 +93,7 @@ async fn create_or_update_link(mut req: Request, ctx: RouteContext<()>) -> Resul
     let kv_store: CloudflareStorageDriver =
         CloudflareStorageDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
     let short_url_name = get_shortlink_id_from_request(&req)?;
-    let body = req.json::<CreateLinkPayload>().await?;
+    let body = req.json::<CreateLinkRequest>().await?;
 
     let url = match Url::parse(&body.url) {
         Ok(url) => url,
