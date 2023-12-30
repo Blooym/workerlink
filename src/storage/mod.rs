@@ -1,6 +1,5 @@
 pub mod cloudflare_storage_driver;
 
-use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use worker::Url;
 
@@ -8,7 +7,6 @@ use worker::Url;
 // TODO: Improve error bubbling up instead of mindlessly calling unwrap()s
 
 /// Represents a generic storage driver that can be used to store keys and values.
-#[async_trait(?Send)]
 pub trait StorageDriver {
     /// Get the value of a key.
     async fn get(&self, key: &str) -> Option<String>;
@@ -33,7 +31,7 @@ pub trait StorageDriver {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ShortlinkModel {
     /// The URL that this shortlink directs to.
-    pub original_url: Url,
+    pub url: Url,
     /// The amount of views this shortlink has received.
     pub views: u64,
     /// The maximum amount of times this link can be visited before become invalid.
@@ -44,4 +42,6 @@ pub struct ShortlinkModel {
     pub created_at_timestamp: u64,
     /// The time this shortlink was last visited.
     pub last_visited_timestamp: Option<u64>,
+    /// Whether or not this shortlink is disabled.
+    pub disabled: bool,
 }

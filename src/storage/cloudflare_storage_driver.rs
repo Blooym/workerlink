@@ -1,5 +1,4 @@
 use super::StorageDriver;
-use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 use worker::kv::KvStore;
 
@@ -18,7 +17,6 @@ impl CloudflareKVDriver {
     }
 }
 
-#[async_trait(?Send)]
 impl StorageDriver for CloudflareKVDriver {
     async fn get(&self, key: &str) -> Option<String> {
         self.kv_store.get(key).text().await.unwrap()
