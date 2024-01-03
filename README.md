@@ -33,8 +33,6 @@ Using the provided API you could easily setup Shortlink with any bash script to 
 
 - **`GET /:id`: Redirect to the URL associated with the ID if it exists.**
 
-- **`HEAD /:id`: Check if a shortlink with the ID exists.**
-
 -  **`🔒 POST /:id`: Create or update a shortlink.**
 
     * Example body:

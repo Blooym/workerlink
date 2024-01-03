@@ -1,4 +1,4 @@
-use crate::storage::ShortlinkModel;
+use crate::models::shortlink::ShortlinkModel;
 use serde::Serialize;
 use url::Url;
 
@@ -7,22 +7,16 @@ use url::Url;
 pub struct CreateShortlinkResponse {
     pub url: String,
     pub original_url: String,
-    pub overwritten: bool,
     pub expiry_timestamp: Option<u64>,
     pub max_views: Option<u64>,
     pub disabled: bool,
 }
 
 impl CreateShortlinkResponse {
-    pub fn from_shortlink_model(
-        shortlink_model: &ShortlinkModel,
-        web_url: Url,
-        overwritten: bool,
-    ) -> Self {
+    pub fn from_model(shortlink_model: &ShortlinkModel, web_url: Url) -> Self {
         CreateShortlinkResponse {
             url: web_url.to_string(),
             original_url: shortlink_model.url.to_string(),
-            overwritten,
             expiry_timestamp: shortlink_model.expiry_timestamp,
             max_views: shortlink_model.max_views,
             disabled: shortlink_model.disabled,
