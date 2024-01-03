@@ -12,8 +12,8 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-async-trait = "0.1.74"
-serde = { version = "1.0.192", features = ["derive"] }
+async-trait = "0.1.77"
+serde = { version = "1.0.194", features = ["derive"] }
 worker = "0.0.18"
 
 [profile.release]
