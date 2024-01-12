@@ -1,5 +1,9 @@
 # shortlink-cf
 
+> [!WARNING]  
+> Shortlink is not ready for production usage just yet! Its API structure and storage system is subject to breaking changes for the time being.
+
+
 A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV.
 
 ## Setup
