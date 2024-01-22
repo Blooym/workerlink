@@ -8,18 +8,18 @@ publish = false
 version = "0.1.0"
 edition = "2021"
 
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = false
+# This may be required when working on MacOS
+# [package.metadata.wasm-pack.profile.release]
+# wasm-opt = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-anyhow = "1.0.79"
 humantime = "2.1.0"
 humantime-serde = "1.1.1"
-serde = { version = "1.0.194", features = ["derive"] }
-serde_json = "1.0.110"
+serde = { version = "1.0.195", features = ["derive"] }
+serde_json = "1.0.111"
 url = { version = "2.5.0", features = ["serde"] }
 validator = { version = "0.16.1", features = ["derive"] }
 worker = { version = "0.0.18", features = ["d1"] }

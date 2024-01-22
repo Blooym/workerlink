@@ -2,7 +2,7 @@ use serde::Deserialize;
 use std::time::Duration;
 use validator::Validate;
 
-/// The request for creating/updating a Shortlink.
+/// Represents the request body for creating/updating a Shortlink.
 #[derive(Validate, Deserialize)]
 pub struct CreateShortlinkRequestBody {
     #[validate(url)]
