@@ -1,53 +1,43 @@
-# shortlink-cf
-
-> [!WARNING]  
-> Shortlink is not ready for production usage just yet! Its API structure and storage system is subject to breaking changes for the time being.
-
+# Workerlink
 
 A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV.
 
-## Setup
+## Deployment
 
-In order to setup Shortlink on Cloudflare, create a 'wrangler.toml' file with the following contents:
+In order to deploy Workerlink to Cloudflare Workers, you need to do the following:
 
-```toml
-name = "shortlink"
-main = "build/worker/shim.mjs"
-compatibility_date = "2023-08-10"
-kv_namespaces = [
-    { binding = "locations", id = "<KV ID>" } # Replace <KV ID> with the ID of the KV namespace you want to use, you may need to create one first.
-]
+1. Clone this repository locally with git or by downloading the source archive.
+2. Download and install the latest [NodeJS LTS](https://nodejs.org) and [Rust](https://rustup.rs/) versions, or use the provided [.devcontainer](.devcontainer) setup for an environment.
+3. Run `npm install` to install all dependencies needed to build/deploy.
+4. [Setup a KV namespace](https://developers.cloudflare.com/kv/get-started/) on Cloudflare by following their documentation.
+5. Create a 'wrangler.toml' file with the following contents at the root of the repository:
+    ```toml
+    name = "workerlink"
+    main = "build/worker/shim.mjs"
+    compatibility_date = "2023-08-10"
+    kv_namespaces = [
+        { binding = "links", id = "<KV ID>" } # Replace <KV ID> with the ID of the KV namespace you setup earlier.
+    ]
 
-[vars]
-AUTH_TOKEN = # Set this to the token you want to use for authentication.
+    [vars]
+    AUTH_TOKEN = # Set this to the token you want to use for authentication.
 
-[build]
-command = "cargo install -q worker-build && worker-build --release"
-```
+    [build]
+    command = "cargo install -q worker-build && worker-build --release"
+    ```
+6. Run `npm run deploy` to deploy the worker to Cloudflare; You will be prompted to authenticate with Cloudflare during this process so the worker can be deployed using your account.
 
-After that, run `npm install` to install the dependencies, and `npm run deploy` to deploy the worker to Cloudflare.
+## API Documentation
 
-## Uses
+All interaction/management actions for Workerlink is done via HTTP requests. Below outlines the structure for the API:
 
-Using the provided API you could easily setup Shortlink with any bash script to keybind creating a new short URL, or even integrate it with the "Shortcuts" app on Apple devices to shorten links from the comfort of a URL share sheet.
+- **`GET /:id`:** Redirects to the URL associated with the ID if it exists.
+    - Authentication Required: No
 
-## API Route Documentation
+- **`POST /:id`:** Create or update a shortlink.
+    - Authentication Required: Yes
 
-🔒 represents a route that requires a valid `Authorization` header to be provided, this will be the same as the `AUTH_TOKEN` you've set as an environment variable.
-
-- **`GET /:id`: Redirect to the URL associated with the ID if it exists.**
-
--  **`🔒 POST /:id`: Create or update a shortlink.**
-
-    * Example body:
-        ```json5
-        {
-            "url": "https://example.com", // The URL to redirect to upon visiting the link.
-            "overwrite": false|true // Whether or not to overwrite any existing shortlink with the same ID.
-        }
-        ```
-
-- **`🔒 DELETE /:id` - Deletes a shortlink.**
+- **`DELETE /:id`:** - Deletes a shortlink.
 
 ## Licence
 

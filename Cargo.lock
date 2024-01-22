@@ -557,19 +557,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "shortlink-cf"
-version = "0.1.0"
-dependencies = [
- "humantime",
- "humantime-serde",
- "serde",
- "serde_json",
- "url",
- "validator",
- "worker",
-]
-
-[[package]]
 name = "siphasher"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -891,4 +878,17 @@ dependencies = [
  "js-sys",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "workerlink"
+version = "0.1.0"
+dependencies = [
+ "humantime",
+ "humantime-serde",
+ "serde",
+ "serde_json",
+ "url",
+ "validator",
+ "worker",
 ]

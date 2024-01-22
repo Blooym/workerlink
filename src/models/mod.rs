@@ -1,1 +1,1 @@
-pub mod shortlink;
+pub mod link;

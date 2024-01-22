@@ -4,10 +4,10 @@ mod messages;
 mod models;
 mod storage;
 
-use api::{requests::CreateShortlinkRequestBody, responses::CreateShortlinkResponse};
+use api::{requests::CreateLinkRequestBody, responses::CreateLinkResponse};
 use authentication::authorized_guard;
 use messages::*;
-use models::shortlink::{ShortlinkBuilderArgs, ShortlinkModel};
+use models::link::{LinkBuilderArgs, LinkModel};
 use storage::{
     cloudflare_kv_driver::{CloudflareKVDriver, CLOUDFLARE_KV_BINDING},
     StorageDriver,
@@ -20,11 +20,11 @@ async fn fetch(req: Request, env: Env, _ctx: Context) -> worker::Result<Response
     Router::new()
         .get("/", index_handler)
         .get("/favicon.ico", favicon_handler)
-        .get_async("/:id", shortlink_redirect_handler)
-        .get_async("/:id/details", shortlink_details_handler)
-        .get_async("/:id/exists", shortlink_exists_handler)
-        .post_async("/:id", create_or_update_shortlink_handler)
-        .delete_async("/:id", delete_shortlink_handler)
+        .get_async("/:id", link_redirect_handler)
+        .get_async("/:id/details", link_details_handler)
+        .get_async("/:id/exists", link_exists_handler)
+        .post_async("/:id", create_or_update_link_handler)
+        .delete_async("/:id", delete_link_handler)
         .run(req, env)
         .await
 }
@@ -39,19 +39,19 @@ fn favicon_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Resp
     Response::from_bytes(include_bytes!("../static/favicon.ico").to_vec())
 }
 
-/// Get the Shortlink key from a request.
-fn get_shortlink_id_from_request(req: &Request) -> worker::Result<String> {
+/// Get the Link key from a request.
+fn get_link_id_from_request(req: &Request) -> worker::Result<String> {
     let path = req.path();
     let Some(id) = path.split('/').nth(1) else {
-        Err("Unable to find Shortlink ID from request URL.")?
+        Err("Unable to find Link ID from request URL.")?
     };
     Ok(id.to_string())
 }
 
-/// Check if a Shortlink exists.
-async fn shortlink_exists_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
+/// Check if a Link exists.
+async fn link_exists_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
-    let key = get_shortlink_id_from_request(&req)?;
+    let key = get_link_id_from_request(&req)?;
 
     if !storage.exists(&key).await {
         return Ok(Response::empty()?.with_status(404));
@@ -60,33 +60,30 @@ async fn shortlink_exists_handler(req: Request, ctx: RouteContext<()>) -> worker
     Ok(Response::empty()?.with_status(302))
 }
 
-/// Get a Shortlink and handles the redirect for it's linked URL.
-async fn shortlink_redirect_handler(
-    req: Request,
-    ctx: RouteContext<()>,
-) -> worker::Result<Response> {
+/// Get a Link and handles the redirect for it's linked URL.
+async fn link_redirect_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
-    let key = get_shortlink_id_from_request(&req)?;
-    match storage.get_deserialized_json::<ShortlinkModel>(&key).await {
+    let key = get_link_id_from_request(&req)?;
+    match storage.get_deserialized_json::<LinkModel>(&key).await {
         Some(mut value) => {
-            // Shortlink has been disabled, act as it doesn't exist.
+            // Link has been disabled, act as it doesn't exist.
             if value.disabled {
-                return Response::error(SHORTLINK_DOESNT_EXIST_RESPONSE, 404);
+                return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
             }
 
-            // If the Shortlink has expired due to time.
+            // If the Link has expired due to time.
             if let Some(expires_at_ms) = value.expiry_timestamp {
                 if Date::now().as_millis() > expires_at_ms {
                     storage.delete(&key).await;
-                    return Response::error(SHORTLINK_DOESNT_EXIST_RESPONSE, 404);
+                    return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
                 }
             }
 
-            // If the Shortlink has reached it's maximum number of views.
+            // If the Link has reached it's maximum number of views.
             if let Some(max_views) = value.max_views {
                 if value.views >= max_views {
                     storage.delete(&key).await;
-                    return Response::error(SHORTLINK_DOESNT_EXIST_RESPONSE, 404);
+                    return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
                 }
             }
 
@@ -94,52 +91,49 @@ async fn shortlink_redirect_handler(
             storage.set_serialized_json(&key, &value).await;
             Response::redirect(value.url)
         }
-        None => return Response::error(SHORTLINK_DOESNT_EXIST_RESPONSE, 404),
+        None => return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404),
     }
 }
 
-/// Get a Shortlink and return its details.
-async fn shortlink_details_handler(
-    req: Request,
-    ctx: RouteContext<()>,
-) -> worker::Result<Response> {
+/// Get a Link and return its details.
+async fn link_details_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let auth_guard = authorized_guard(&req, &ctx);
     if auth_guard.is_err() {
         return auth_guard.unwrap_err();
     }
 
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
-    let key = get_shortlink_id_from_request(&req)?;
-    match storage.get_deserialized_json::<ShortlinkModel>(&key).await {
+    let key = get_link_id_from_request(&req)?;
+    match storage.get_deserialized_json::<LinkModel>(&key).await {
         Some(value) => {
-            // Shortlink has been disabled, act as it doesn't exist.
+            // Link has been disabled, act as it doesn't exist.
             if value.disabled {
-                return Response::error(SHORTLINK_DOESNT_EXIST_RESPONSE, 404);
+                return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
             }
 
-            // If the Shortlink has expired due to time.
+            // If the Link has expired due to time.
             if let Some(expires_at_ms) = value.expiry_timestamp {
                 if Date::now().as_millis() > expires_at_ms {
                     storage.delete(&key).await;
-                    return Response::error(SHORTLINK_DOESNT_EXIST_RESPONSE, 404);
+                    return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
                 }
             }
 
-            // If the Shortlink has reached it's maximum number of views.
+            // If the Link has reached it's maximum number of views.
             if let Some(max_views) = value.max_views {
                 if value.views >= max_views {
                     storage.delete(&key).await;
-                    return Response::error(SHORTLINK_DOESNT_EXIST_RESPONSE, 404);
+                    return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
                 }
             }
             Response::from_json(&value)
         }
-        None => return Response::error(SHORTLINK_DOESNT_EXIST_RESPONSE, 404),
+        None => return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404),
     }
 }
 
-/// Creates or updates a Shortlink.
-async fn create_or_update_shortlink_handler(
+/// Creates or updates a Link.
+async fn create_or_update_link_handler(
     mut req: Request,
     ctx: RouteContext<()>,
 ) -> worker::Result<Response> {
@@ -149,8 +143,8 @@ async fn create_or_update_shortlink_handler(
     }
 
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
-    let key = get_shortlink_id_from_request(&req)?;
-    let body = req.json::<CreateShortlinkRequestBody>().await?;
+    let key = get_link_id_from_request(&req)?;
+    let body = req.json::<CreateLinkRequestBody>().await?;
 
     if body.validate().is_err() {
         return Response::error(INVALID_PAYLOAD_RESPONSE, 400);
@@ -162,18 +156,18 @@ async fn create_or_update_shortlink_handler(
         Err(_) => return Response::error(UNABLE_TO_PARSE_URL_RESPONSE, 400),
     };
 
-    // Prevent making a Shortlink that recurses forever on the same domain.
+    // Prevent making a Link that recurses forever on the same domain.
     if req.url()?.domain() == url.domain() {
-        return Response::error(NO_SHORTLINK_OWN_DOMAIN_RESPONSE, 400);
+        return Response::error(NO_LINK_OWN_DOMAIN_RESPONSE, 400);
     }
 
-    let existing_model = storage.get_deserialized_json::<ShortlinkModel>(&key).await;
+    let existing_model = storage.get_deserialized_json::<LinkModel>(&key).await;
     if !body.overwrite && existing_model.is_some() {
-        return Response::error(SHORTLINK_ALREADY_EXISTS_NO_OVERWRITE, 409);
+        return Response::error(LINK_ALREADY_EXISTS_NO_OVERWRITE, 409);
     }
 
     let model = match existing_model {
-        Some(model) => model.modify(ShortlinkBuilderArgs {
+        Some(model) => model.modify(LinkBuilderArgs {
             url,
             max_views: body.max_views,
             disabled: body.disabled,
@@ -181,7 +175,7 @@ async fn create_or_update_shortlink_handler(
                 .expire_in
                 .map(|time| Date::now().as_millis() + time.as_millis() as u64),
         }),
-        None => ShortlinkModel::new(ShortlinkBuilderArgs {
+        None => LinkModel::new(LinkBuilderArgs {
             url,
             max_views: body.max_views,
             disabled: body.disabled,
@@ -192,17 +186,17 @@ async fn create_or_update_shortlink_handler(
     };
 
     if !storage
-        .set_serialized_json::<&ShortlinkModel>(&key, &model)
+        .set_serialized_json::<&LinkModel>(&key, &model)
         .await
     {
-        return Response::error(GENERIC_SHORTLINK_CREATE_ERROR_RESPONSE, 500);
+        return Response::error(GENERIC_LINK_CREATE_ERROR_RESPONSE, 500);
     }
 
-    Response::from_json(&CreateShortlinkResponse::from_model(&model, req.url()?))
+    Response::from_json(&CreateLinkResponse::from_model(&model, req.url()?))
 }
 
-/// Deletes a Shortlink.
-async fn delete_shortlink_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
+/// Deletes a Link.
+async fn delete_link_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let auth_guard = authorized_guard(&req, &ctx);
     if auth_guard.is_err() {
         return auth_guard.unwrap_err();
@@ -210,15 +204,15 @@ async fn delete_shortlink_handler(req: Request, ctx: RouteContext<()>) -> worker
 
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
 
-    let key = get_shortlink_id_from_request(&req)?;
+    let key = get_link_id_from_request(&req)?;
     match storage.get(&key).await {
         Some(_) => (),
-        None => return Response::error(SHORTLINK_DOESNT_EXIST_RESPONSE, 404),
+        None => return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404),
     };
 
     if !storage.delete(&key).await {
-        return Response::error(GENERIC_SHORTLINK_DELETE_ERROR_RESPONSE, 500);
+        return Response::error(GENERIC_LINK_DELETE_ERROR_RESPONSE, 500);
     }
 
-    Response::ok(SHORTLINK_DELETE_SUCCESS_RESPONSE)
+    Response::ok(LINK_DELETE_SUCCESS_RESPONSE)
 }

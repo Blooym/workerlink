@@ -1,8 +1,8 @@
 [package]
-name = "shortlink-cf"
+name = "workerlink"
 authors = ["Blooym"]
 description = "A simple link redirect service"
-repository = "https://github.com/Blooym/shortlink-cf"
+repository = "https://github.com/Blooym/workerlink"
 license = "MIT OR Apache-2.0"
 publish = false
 version = "0.1.0"

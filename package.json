@@ -1,9 +1,9 @@
 {
-	"name": "shortlink-cf",
+	"name": "workerlink",
 	"version": "0.1.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Blooym/shortlink-cf.git"
+		"url": "https://github.com/Blooym/workerlink.git"
 	},
 	"private": true,
 	"scripts": {

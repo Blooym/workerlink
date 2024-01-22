@@ -2,7 +2,7 @@ use super::StorageDriver;
 use serde::{de::DeserializeOwned, Serialize};
 use worker::kv::KvStore;
 
-/// The binding name for the KV namespace that stores Shortlink data.
+/// The binding name for the KV namespace that stores Link data.
 pub const CLOUDFLARE_KV_BINDING: &str = "links";
 
 /// A driver for Cloudflare KV.
