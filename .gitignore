@@ -1,6 +1,14 @@
+# Dependencies
 node_modules/
+
+# Build Artifacts
 target/
 build/
 .wrangler/
+
+# Secrets
 wrangler.toml
 .dev.vars
+
+# MacOS
+.DS_Store
