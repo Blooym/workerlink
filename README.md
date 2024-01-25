@@ -1,55 +1,64 @@
-# shortlink-cf
-
-> [!WARNING]  
-> Shortlink is not ready for production usage just yet! Its API structure and storage system is subject to breaking changes for the time being.
-
+# Workerlink
 
 A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV.
 
-## Setup
+## Deployment
 
-In order to setup Shortlink on Cloudflare, create a 'wrangler.toml' file with the following contents:
+In order to deploy Workerlink to Cloudflare Workers, you need to do the following:
 
-```toml
-name = "shortlink"
-main = "build/worker/shim.mjs"
-compatibility_date = "2023-08-10"
-kv_namespaces = [
-    { binding = "locations", id = "<KV ID>" } # Replace <KV ID> with the ID of the KV namespace you want to use, you may need to create one first.
-]
+1. Clone this repository locally with git or by downloading the source archive.
+2. Download and install [NodeJS](https://nodejs.org) and [Rust v1.75.0+](https://rustup.rs/), or use the provided [.devcontainer](.devcontainer) setup for an environment.
+3. Run `npm install` to install all dependencies needed to build/deploy.
+4. [Setup a KV namespace](https://developers.cloudflare.com/kv/get-started/) on Cloudflare by following their documentation.
+5. Create a 'wrangler.toml' file with the following contents at the root of the repository:
+    ```toml
+    name = "workerlink"
+    main = "build/worker/shim.mjs"
+    compatibility_date = "2023-12-01"
+    kv_namespaces = [
+        { binding = "links", id = "<KV ID>" } # Replace <KV ID> with the ID of the KV namespace you setup earlier.
+    ]
 
-[vars]
-AUTH_TOKEN = # Set this to the token you want to use for authentication.
+    [vars]
+    AUTH_TOKEN = "" # Set this to the token you want to use for authentication.
 
-[build]
-command = "cargo install -q worker-build && worker-build --release"
-```
+    [build]
+    command = "cargo install -q worker-build && worker-build --release"
+    ```
+6. Run `npm run deploy` to deploy the worker to Cloudflare; You will be prompted to authenticate with Cloudflare during this process so the worker can be deployed using your account.
 
-After that, run `npm install` to install the dependencies, and `npm run deploy` to deploy the worker to Cloudflare.
+## Examples
 
-## Uses
+- **In a browser:** Use a redirect   
+Navigate to `https://<WORKER_URL>/<ID>` and the browser will automatically direct.
 
-Using the provided API you could easily setup Shortlink with any bash script to keybind creating a new short URL, or even integrate it with the "Shortcuts" app on Apple devices to shorten links from the comfort of a URL share sheet.
+- **Using curl:** Create/Update a new redirect
+    ```bash
+    curl --request POST \
+      --url 'https://<WORKER_URL>/<ID>' \
+      --header 'Authorization: <AUTH_TOKEN>' \
+      --header 'content-type: application/json' \
+      --data '{
+      "url": "<URL_TO_REDIRECT_TO>",
+      "expiry_timestamp": unix_timestamp | null,
+      "max_views": number | null,
+      "overwrite": boolean,
+      "disabled": boolean
+    }'
+    ```
 
-## API Route Documentation
+- **Using curl:** Delete an existing redirect
+    ```bash
+    curl --request DELETE \
+      --url 'https://<WORKER_URL>/<ID>' \
+      --header 'Authorization: <AUTH_TOKEN>'
+    ```
 
-🔒 represents a route that requires a valid `Authorization` header to be provided, this will be the same as the `AUTH_TOKEN` you've set as an environment variable.
-
-- **`GET /:id`: Redirect to the URL associated with the ID if it exists.**
-
-- **`HEAD /:id`: Check if a shortlink with the ID exists.**
-
--  **`🔒 POST /:id`: Create or update a shortlink.**
-
-    * Example body:
-        ```json5
-        {
-            "url": "https://example.com", // The URL to redirect to upon visiting the link.
-            "overwrite": false|true // Whether or not to overwrite any existing shortlink with the same ID.
-        }
-        ```
-
-- **`🔒 DELETE /:id` - Deletes a shortlink.**
+- **Using curl:** Check the underlying JSON of a redirect
+    ```bash
+    curl 'https://<WORKER_URL>/<ID>/details' \
+        --header 'Authorization: <AUTH_TOKEN>'
+    ```
 
 ## Licence
 

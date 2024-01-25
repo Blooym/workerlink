@@ -1,16 +1,24 @@
-pub mod cloudflare_storage_driver;
+pub mod cloudflare_kv_driver;
 
-use async_trait::async_trait;
+use serde::{de::DeserializeOwned, Serialize};
 
-#[async_trait(?Send)]
 /// Represents a generic storage driver that can be used to store keys and values.
 pub trait StorageDriver {
-    /// Get the value for the given key.
-    async fn get_value(&self, key: &str) -> Option<String>;
+    /// Check if a key exists.
+    async fn exists(&self, key: &str) -> bool;
 
-    /// Set a key's value.
-    async fn set_value(&self, key: &str, value: &str) -> bool;
+    /// Get the value of a key.
+    async fn get(&self, key: &str) -> Option<String>;
 
-    /// Deletes the key's value.
-    async fn delete_value(&self, key: &str) -> bool;
+    /// Get the value of a key with automatic deserialization into the given struct from JSON.
+    async fn get_deserialized_json<T: DeserializeOwned>(&self, key: &str) -> Option<T>;
+
+    /// Set the value of a key.
+    async fn set(&self, key: &str, value: &str) -> bool;
+
+    /// Set the value of a key with automatic serialization of the given struct into JSON.
+    async fn set_serialized_json<T: Serialize>(&self, key: &str, value: T) -> bool;
+
+    /// Delete a key.
+    async fn delete(&self, key: &str) -> bool;
 }
