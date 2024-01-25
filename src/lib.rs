@@ -160,6 +160,7 @@ async fn create_or_update_link_handler(
         return Response::error(NO_LINK_OWN_DOMAIN_RESPONSE, 400);
     }
 
+    // Grab existing model and check if we can overwrite it if it exists.
     let existing_model = storage.get_deserialized_json::<LinkModel>(&key).await;
     if !body.overwrite && existing_model.is_some() {
         return Response::error(LINK_ALREADY_EXISTS_NO_OVERWRITE, 409);
