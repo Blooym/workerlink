@@ -1,12 +1,12 @@
 use serde::Deserialize;
 use std::time::Duration;
+use url::Url;
 use validator::Validate;
 
 /// Represents the request body for creating/updating a Link.
-#[derive(Validate, Deserialize)]
+#[derive(Debug, Validate, Deserialize)]
 pub struct CreateLinkRequestBody {
-    #[validate(url)]
-    pub url: String,
+    pub url: Url,
     #[serde(default)]
     pub overwrite: bool,
     #[serde(default)]

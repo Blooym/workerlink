@@ -3,7 +3,7 @@ use serde::Serialize;
 use url::Url;
 
 /// Represents the response body for successfully creating a Link.
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct CreateLinkResponse {
     pub url: String,
     pub expiry_timestamp: Option<u64>,

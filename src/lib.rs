@@ -13,7 +13,7 @@ use storage::{
     StorageDriver,
 };
 use validator::Validate;
-use worker::{event, Context, Date, Env, Request, Response, RouteContext, Router, Url};
+use worker::{event, Context, Date, Env, Request, Response, RouteContext, Router};
 
 #[event(fetch)]
 async fn fetch(req: Request, env: Env, _ctx: Context) -> worker::Result<Response> {
@@ -21,26 +21,26 @@ async fn fetch(req: Request, env: Env, _ctx: Context) -> worker::Result<Response
         .get("/", index_handler)
         .get("/favicon.ico", favicon_handler)
         .get_async("/:id", link_redirect_handler)
-        .get_async("/:id/details", link_details_handler)
-        .get_async("/:id/where", link_where_handler)
         .post_async("/:id", create_or_update_link_handler)
         .delete_async("/:id", delete_link_handler)
+        .get_async("/:id/where", link_where_handler)
+        .get_async("/:id/details", link_details_handler)
         .run(req, env)
         .await
 }
 
-/// Handler for the index (/) route.
+/// Handler to serve the index HTML.
 fn index_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
     Response::from_html(include_str!("../static/index.html"))
 }
 
-/// Handler for the favicon (/favicon,ico) route.
+/// Handler to serve the site favicon.
 fn favicon_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
     Response::from_bytes(include_bytes!("../static/favicon.ico").to_vec())
 }
 
 /// Get the link ID from a request.
-fn get_link_id_from_request(req: &Request) -> worker::Result<String> {
+fn get_link_id_from_req(req: &Request) -> worker::Result<String> {
     let path = req.path();
     let Some(id) = path.split('/').nth(1) else {
         Err("Unable to find link ID from request URL.")?
@@ -48,127 +48,116 @@ fn get_link_id_from_request(req: &Request) -> worker::Result<String> {
     Ok(id.to_string())
 }
 
-/// Get the underlying redirect from a link ID.
-async fn link_where_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
+/// Handle a visit to /:id by attempting to find the key in storage and redirecting to the assigned url.
+///
+/// This handler will also deal with the following:
+///     - Incrementing the visits count and storing the updated value
+///     - Deleting the key from storage if it is no longer valid (exceeds max views, timed expiry, etc.)
+async fn link_redirect_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
-    let key = get_link_id_from_request(&req)?;
+    let id = get_link_id_from_req(&req)?;
 
-    match storage.get_deserialized_json::<LinkModel>(&key).await {
-        Some(link) => Response::ok(link.url.to_string()),
+    match storage.get_deserialized_json::<LinkModel>(&id).await {
+        Some(mut link) => {
+            if link.disabled {
+                return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
+            }
+
+            if !link.is_valid() {
+                storage.delete(&id).await;
+                return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
+            }
+
+            link.increment_visits();
+            storage.set_serialized_json(&id, &link).await;
+            Response::redirect(link.url)
+        }
         None => Response::error(LINK_DOESNT_EXIST_RESPONSE, 404),
     }
 }
 
-/// Get a link and handle the redirect for it's linked URL.
-async fn link_redirect_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
+/// Get the underlying redirect from a link key.
+async fn link_where_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
-    let key = get_link_id_from_request(&req)?;
-    match storage.get_deserialized_json::<LinkModel>(&key).await {
-        Some(mut value) => {
-            // If the link has been disabled, act as it doesn't exist.
-            if value.disabled {
+    let id = get_link_id_from_req(&req)?;
+
+    match storage.get_deserialized_json::<LinkModel>(&id).await {
+        Some(link) => {
+            if link.disabled {
                 return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
             }
 
-            // If the link has expired due to time.
-            if let Some(expires_at_ms) = value.expiry_timestamp {
-                if Date::now().as_millis() > expires_at_ms {
-                    storage.delete(&key).await;
-                    return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
-                }
+            if !link.is_valid() {
+                storage.delete(&id).await;
+                return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
             }
 
-            // If the link has reached it's maximum number of views.
-            if let Some(max_views) = value.max_views {
-                if value.views >= max_views {
-                    storage.delete(&key).await;
-                    return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
-                }
-            }
-
-            value.increment_visits();
-            storage.set_serialized_json(&key, &value).await;
-            Response::redirect(value.url)
+            Response::ok(link.url.to_string())
         }
-        None => return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404),
+        None => Response::error(LINK_DOESNT_EXIST_RESPONSE, 404),
     }
 }
 
-/// Get a link and return its details.
+/// Get a link and return its details as JSON.
 async fn link_details_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let auth_guard = authorized_guard(&req, &ctx);
-    if auth_guard.is_err() {
-        return auth_guard.unwrap_err();
+    if let Err(err) = auth_guard {
+        return err;
     }
 
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
-    let key = get_link_id_from_request(&req)?;
-    match storage.get_deserialized_json::<LinkModel>(&key).await {
-        Some(value) => {
-            // If the link has been disabled, act as it doesn't exist.
-            if value.disabled {
+    let id = get_link_id_from_req(&req)?;
+
+    match storage.get_deserialized_json::<LinkModel>(&id).await {
+        Some(link) => {
+            if !link.is_valid() {
+                storage.delete(&id).await;
                 return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
             }
 
-            // If the Link has expired due to time.
-            if let Some(expires_at_ms) = value.expiry_timestamp {
-                if Date::now().as_millis() > expires_at_ms {
-                    storage.delete(&key).await;
-                    return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
-                }
-            }
-
-            // If the link has reached it's maximum number of views.
-            if let Some(max_views) = value.max_views {
-                if value.views >= max_views {
-                    storage.delete(&key).await;
-                    return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404);
-                }
-            }
-            Response::from_json(&value)
+            Response::from_json(&link)
         }
-        None => return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404),
+        None => Response::error(LINK_DOESNT_EXIST_RESPONSE, 404),
     }
 }
 
-/// Creates or updates a link.
+/// Create a new link or update an existing one.
 async fn create_or_update_link_handler(
     mut req: Request,
     ctx: RouteContext<()>,
 ) -> worker::Result<Response> {
     let auth_guard = authorized_guard(&req, &ctx);
-    if auth_guard.is_err() {
-        return auth_guard.unwrap_err();
+    if let Err(err) = auth_guard {
+        return err;
     }
 
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
-    let key = get_link_id_from_request(&req)?;
-    let body = req.json::<CreateLinkRequestBody>().await?;
+    let id: String = get_link_id_from_req(&req)?;
 
+    // Validate the JSON from the request can be deserialized.
+    let Ok(body) = req.json::<CreateLinkRequestBody>().await else {
+        return Response::error(INVALID_PAYLOAD_RESPONSE, 400);
+    };
+
+    // Validate that the struct is valid using the custom struct validator.
     if body.validate().is_err() {
         return Response::error(INVALID_PAYLOAD_RESPONSE, 400);
     }
 
-    // Parse the given URL.
-    let url: Url = match Url::parse(&body.url) {
-        Ok(url) => url,
-        Err(_) => return Response::error(UNABLE_TO_PARSE_URL_RESPONSE, 400),
-    };
-
     // Prevent making a link that recurses forever on the same domain.
-    if req.url()?.domain() == url.domain() {
+    if req.url()?.domain() == body.url.domain() {
         return Response::error(NO_LINK_OWN_DOMAIN_RESPONSE, 400);
     }
 
-    // Grab existing model and check if we can overwrite it if it exists.
-    let existing_model = storage.get_deserialized_json::<LinkModel>(&key).await;
+    // Grab the existing model and check if we can overwrite it (if it exists).
+    let existing_model = storage.get_deserialized_json::<LinkModel>(&id).await;
     if !body.overwrite && existing_model.is_some() {
         return Response::error(LINK_ALREADY_EXISTS_NO_OVERWRITE, 409);
     }
 
     let model = match existing_model {
         Some(model) => model.modify(LinkBuilderArgs {
-            url,
+            url: body.url,
             max_views: body.max_views,
             disabled: body.disabled,
             expiry_timestamp: body
@@ -176,7 +165,7 @@ async fn create_or_update_link_handler(
                 .map(|time| Date::now().as_millis() + time.as_millis() as u64),
         }),
         None => LinkModel::new(LinkBuilderArgs {
-            url,
+            url: body.url,
             max_views: body.max_views,
             disabled: body.disabled,
             expiry_timestamp: body
@@ -185,32 +174,29 @@ async fn create_or_update_link_handler(
         }),
     };
 
-    if !storage
-        .set_serialized_json::<&LinkModel>(&key, &model)
-        .await
-    {
+    if !storage.set_serialized_json::<&LinkModel>(&id, &model).await {
         return Response::error(GENERIC_LINK_CREATE_ERROR_RESPONSE, 500);
     }
 
     Response::from_json(&CreateLinkResponse::from_model(&model, req.url()?))
 }
 
-/// Deletes a link.
+/// Delete a link.
 async fn delete_link_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let auth_guard = authorized_guard(&req, &ctx);
-    if auth_guard.is_err() {
-        return auth_guard.unwrap_err();
+    if let Err(err) = auth_guard {
+        return err;
     }
 
     let storage = CloudflareKVDriver::new(ctx.kv(CLOUDFLARE_KV_BINDING)?);
 
-    let key = get_link_id_from_request(&req)?;
-    match storage.get(&key).await {
+    let id = get_link_id_from_req(&req)?;
+    match storage.get(&id).await {
         Some(_) => (),
         None => return Response::error(LINK_DOESNT_EXIST_RESPONSE, 404),
     };
 
-    if !storage.delete(&key).await {
+    if !storage.delete(&id).await {
         return Response::error(GENERIC_LINK_DELETE_ERROR_RESPONSE, 500);
     }
 

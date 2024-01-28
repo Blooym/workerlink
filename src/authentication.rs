@@ -11,6 +11,7 @@ const AUTH_TOKEN_BINDING: &str = "AUTH_TOKEN";
 const AUTHORIZATION_HEADER: &str = "Authorization";
 
 /// Represents a requests authorization state.
+#[derive(Debug)]
 enum AuthorizationState {
     Authorized,
     Unauthorized,
@@ -18,7 +19,7 @@ enum AuthorizationState {
     InternalNoTokenSet,
 }
 
-/// Checks if the request is authorized by comparing the Authorization header to the [`AUTH_TOKEN_BINDING`] value.
+/// Check if the request is authorized by comparing the Authorization header to the [`AUTH_TOKEN_BINDING`] value.
 fn is_request_authorized(
     req: &Request,
     ctx: &RouteContext<()>,
@@ -43,24 +44,20 @@ fn is_request_authorized(
     }
 }
 
-/// Guards a request by checking if it's authorized and returning a response value with an error if it isn't.
+/// Guard a request by checking if it's authorized and returning a response value with an error if it isn't.
 pub fn authorized_guard(
     req: &Request,
     ctx: &RouteContext<()>,
 ) -> Result<(), worker::Result<worker::Response>> {
-    match is_request_authorized(&req, &ctx).unwrap() {
-        AuthorizationState::Authorized => return Ok(()),
-        AuthorizationState::Unauthorized => {
-            return Err(Response::error(FORBIDDEN_REQUEST_RESPONSE, 403));
-        }
+    match is_request_authorized(req, ctx).unwrap() {
+        AuthorizationState::Authorized => Ok(()),
+        AuthorizationState::Unauthorized => Err(Response::error(FORBIDDEN_REQUEST_RESPONSE, 403)),
         AuthorizationState::NoAuthorizationSent => {
-            return Err(Response::error(UNAUTHORIZED_REQUEST_RESPONSE, 401));
+            Err(Response::error(UNAUTHORIZED_REQUEST_RESPONSE, 401))
         }
-        AuthorizationState::InternalNoTokenSet => {
-            return Err(Response::error(
-                NOT_INITIALISED_WITH_AUTHTOKEN_RESPONSE,
-                500,
-            ));
-        }
+        AuthorizationState::InternalNoTokenSet => Err(Response::error(
+            NOT_INITIALISED_WITH_AUTHTOKEN_RESPONSE,
+            500,
+        )),
     }
 }
