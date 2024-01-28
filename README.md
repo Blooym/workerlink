@@ -1,6 +1,8 @@
 # Workerlink
 
-A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV.
+A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV in under ~500 lines of Rust.
+
+**Project status: Completed & Maintained**
 
 ## Deployment
 
@@ -29,10 +31,13 @@ In order to deploy Workerlink to Cloudflare Workers, you need to do the followin
 
 ## Examples
 
-- **In a browser:** Use a redirect   
+- **In a browser:** Use a redirect.  
 Navigate to `https://<WORKER_URL>/<ID>` and the browser will automatically direct.
 
-- **Using curl:** Create/Update a new redirect
+- **In a browser:** See where an ID redirects to.  
+Navigate to `https://<WORKER_URL>/<ID>/where` and the redirect url will be shown in plaintext.
+
+- **Using curl:** Create/Update a new redirect.
     ```bash
     curl --request POST \
       --url 'https://<WORKER_URL>/<ID>' \
@@ -47,14 +52,14 @@ Navigate to `https://<WORKER_URL>/<ID>` and the browser will automatically direc
     }'
     ```
 
-- **Using curl:** Delete an existing redirect
+- **Using curl:** Delete an existing redirect.
     ```bash
     curl --request DELETE \
       --url 'https://<WORKER_URL>/<ID>' \
       --header 'Authorization: <AUTH_TOKEN>'
     ```
 
-- **Using curl:** Check the underlying JSON of a redirect
+- **Using curl:** Check the underlying JSON of a redirect.
     ```bash
     curl 'https://<WORKER_URL>/<ID>/details' \
         --header 'Authorization: <AUTH_TOKEN>'
@@ -62,4 +67,4 @@ Navigate to `https://<WORKER_URL>/<ID>` and the browser will automatically direc
 
 ## Licence
 
-This project is licenced under both the MIT Licence and the Apache Licence (Version 2.0). See [LICENCE-MIT](LICENCE-MIT) and [LICENCE-APACHE](LICENCE-APACHE) for more details.
+This project is dual-licenced under both the MIT Licence and the Apache Licence (Version 2.0). See [LICENCE-MIT](LICENCE-MIT) and [LICENCE-APACHE](LICENCE-APACHE) for more details.
