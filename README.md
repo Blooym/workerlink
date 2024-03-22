@@ -6,7 +6,7 @@ A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV in 
 
 ## Deployment
 
-In order to deploy Workerlink to Cloudflare Workers, you need to do the following:
+In order to deploy workerlink to Cloudflare Workers, you need to do the following:
 
 1. Clone this repository locally with git or by downloading the source archive.
 2. Download and install [NodeJS](https://nodejs.org) and [Rust v1.75.0+](https://rustup.rs/), or use the provided [.devcontainer](.devcontainer) setup for an environment.
