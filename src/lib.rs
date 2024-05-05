@@ -37,12 +37,25 @@ fn index_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Respon
 
 /// Handler to serve the site favicon.
 fn favicon_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
-    Response::from_bytes(include_bytes!("../static/favicon.ico").to_vec())
+    let mut response =
+        Response::from_bytes(include_bytes!("../static/favicon.ico").to_vec()).unwrap();
+    response
+        .headers_mut()
+        .append("Content-Type", "image/vnd.microsoft.icon")
+        .unwrap();
+
+    Ok(response)
 }
 
 /// Handler to serve the robots.txt.
 fn robots_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
-    Response::from_bytes(include_bytes!("../static/robots.txt").to_vec())
+    let mut response =
+        Response::from_bytes(include_bytes!("../static/robots.txt").to_vec()).unwrap();
+    response
+        .headers_mut()
+        .append("Content-Type", "text/plain")
+        .unwrap();
+    Ok(response)
 }
 
 /// Get the link ID from a request.
