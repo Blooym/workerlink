@@ -4,8 +4,8 @@ use serde::{de::DeserializeOwned, Serialize};
 
 /// Represents a generic storage driver that can be used to store keys and values.
 pub trait StorageDriver {
-    /// Check if a key exists.
-    async fn exists(&self, key: &str) -> bool;
+    // /// Check if a key exists.
+    // async fn exists(&self, key: &str) -> bool;
 
     /// Get the value of a key.
     async fn get(&self, key: &str) -> Option<String>;

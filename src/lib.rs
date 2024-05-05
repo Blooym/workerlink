@@ -20,6 +20,7 @@ async fn fetch(req: Request, env: Env, _ctx: Context) -> worker::Result<Response
     Router::new()
         .get("/", index_handler)
         .get("/favicon.ico", favicon_handler)
+        .get("/robots.txt", robots_handler)
         .get_async("/:id", link_redirect_handler)
         .post_async("/:id", create_or_update_link_handler)
         .delete_async("/:id", delete_link_handler)
@@ -37,6 +38,11 @@ fn index_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Respon
 /// Handler to serve the site favicon.
 fn favicon_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
     Response::from_bytes(include_bytes!("../static/favicon.ico").to_vec())
+}
+
+/// Handler to serve the robots.txt.
+fn robots_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
+    Response::from_bytes(include_bytes!("../static/robots.txt").to_vec())
 }
 
 /// Get the link ID from a request.

@@ -21,9 +21,9 @@ impl CloudflareKVDriver {
 }
 
 impl StorageDriver for CloudflareKVDriver {
-    async fn exists(&self, key: &str) -> bool {
-        self.get(key).await.is_some()
-    }
+    // async fn exists(&self, key: &str) -> bool {
+    // self.get(key).await.is_some()
+    // }
 
     async fn get(&self, key: &str) -> Option<String> {
         self.kv_store.get(key).text().await.unwrap()
