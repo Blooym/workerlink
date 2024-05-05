@@ -41,7 +41,7 @@ fn favicon_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Resp
         Response::from_bytes(include_bytes!("../static/favicon.ico").to_vec()).unwrap();
     response
         .headers_mut()
-        .append("Content-Type", "image/vnd.microsoft.icon")
+        .set("Content-Type", "image/vnd.microsoft.icon")
         .unwrap();
 
     Ok(response)
@@ -53,7 +53,7 @@ fn robots_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Respo
         Response::from_bytes(include_bytes!("../static/robots.txt").to_vec()).unwrap();
     response
         .headers_mut()
-        .append("Content-Type", "text/plain")
+        .set("Content-Type", "text/plain")
         .unwrap();
     Ok(response)
 }
