@@ -16,7 +16,7 @@ In order to deploy workerlink to Cloudflare Workers, you need to do the followin
     ```toml
     name = "workerlink"
     main = "build/worker/shim.mjs"
-    compatibility_date = "2024-04-01"
+    compatibility_date = "2024-09-02"
     kv_namespaces = [
         { binding = "links", id = "<KV ID>" } # Replace <KV ID> with the ID of the KV namespace you setup earlier.
     ]
