@@ -11,6 +11,6 @@
 		"dev": "wrangler dev"
 	},
 	"devDependencies": {
-		"wrangler": "=3.78.7"
+		"wrangler": "=3.84.1"
 	}
 }
