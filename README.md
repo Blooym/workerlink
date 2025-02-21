@@ -9,14 +9,14 @@ A fully serverless URL shortener built on Cloudflare Workers & Cloudflare KV in 
 In order to deploy workerlink to Cloudflare Workers, you need to do the following:
 
 1. Clone this repository locally with git or by downloading the source archive.
-2. Download and install [NodeJS](https://nodejs.org) and [Rust v1.75.0+](https://rustup.rs/), or use the provided [.devcontainer](.devcontainer) setup for an environment.
+2. Download and install [NodeJS](https://nodejs.org) and [Rust v1.85.0+](https://rustup.rs/), or use the provided [.devcontainer](.devcontainer) setup for an environment.
 3. Run `npm install` to install all dependencies needed to build/deploy.
 4. [Setup a KV namespace](https://developers.cloudflare.com/kv/get-started/) on Cloudflare by following their documentation.
 5. Create a 'wrangler.toml' file with the following contents at the root of the repository:
     ```toml
     name = "workerlink"
     main = "build/worker/shim.mjs"
-    compatibility_date = "2024-09-02"
+    compatibility_date = "2024-11-11"
     kv_namespaces = [
         { binding = "links", id = "<KV ID>" } # Replace <KV ID> with the ID of the KV namespace you setup earlier.
     ]
