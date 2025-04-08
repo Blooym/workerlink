@@ -11,6 +11,6 @@
 		"dev": "wrangler dev"
 	},
 	"devDependencies": {
-		"wrangler": "=3.109.2"
+		"wrangler": "=4.9.0"
 	}
 }
